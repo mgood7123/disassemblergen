@@ -1,4 +1,4 @@
-this project atttempts to make a succesfull disassembler generator
+this project attempts to make a succesfull disassembler generator
 
 the generator shall be written once the parser is complete, as you cannot generate an incomplete and faulty parser
 
