@@ -212,28 +212,29 @@ rule_3 ::= "0" "0";
 
 */
 	// rule 1
-	struct TrieNode *root = getNode(); 
-	struct TrieNode *sub_root = getNode(); 
-	struct TrieNode *rule_1 = getNode(); 
-	struct TrieNode *rule_2 = getNode(); 
 	
 	// when adding a new rule indexing resets to 0
 	
-	puts("adding rule 1: segments [1, 0] root [10]");
-	insert(root, "10", 0, NULL);
-	insert(sub_root, "1", 0, rule_1);
-		insert(rule_1, "0", 1, NULL);
+	struct TrieNode *root = getNode(); 
+	puts("adding rule 1: segments [0, 1, 0] root [010]");
+	insert(root, "010", 0, NULL);
+	struct TrieNode *sub_root = getNode(); 
+	struct TrieNode *rule_1 = getNode();
+	struct TrieNode *rule_2 = getNode(); 
+	insert(sub_root, "0", 0, rule_1);
+		insert(rule_1, "1", 1, rule_2);
+		insert(rule_2, "0", 2, NULL);
 	
-	puts("adding rule 2: segments [0, 1] root [01]");
-	insert(root, "01", 0, NULL);
-	insert(sub_root, "0", 0, rule_2);
-		insert(rule_2, "1", 1, NULL);
+	puts("adding rule 2: segments [0, 1, 1] root [011]");
+	insert(root, "011", 0, NULL);
+	struct TrieNode *rule_3 = getNode(); 
+	struct TrieNode *rule_4 = getNode(); 
+	insert(sub_root, "0", 0, rule_3);
+		insert(rule_3, "1", 1, rule_4);
+		insert(rule_4, "1", 2, NULL);
 		
-	puts("adding rule 3: root [00]");
-	insert(root, "00", 0, NULL);
 	// Search for different keys
-	isp(root, sub_root, "10");
-	isp(root, sub_root, "01");
-	isp(root, sub_root, "00");
+	isp(root, sub_root, "010");
+	isp(root, sub_root, "011");
 	return 0; 
 } 
