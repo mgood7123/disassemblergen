@@ -2,7 +2,7 @@ this project attempts to make a succesfull disassembler generator
 
 the generator shall be written once the parser is complete, as you cannot generate an incomplete and faulty parser
 
-the generator shall generate the parser using an AST provided via https://github.com/orangeduck/mpc 's parser combinator library, this and the generator that uses it, is not included in this repo cus it is unneeded at this time
+the generator shall generate the parser using an AST provided via https://github.com/orangeduck/mpc 's parser combinator library, this and the generator that uses it, is not included in this repo as it is not needed at this time
 
 the parser is located in https://github.com/mgood7123/disassemblergen/blob/master/vcpu/trie_binary.c (source file) and https://github.com/mgood7123/disassemblergen/blob/master/vcpu/trie_binary (executable ELF binary, 64 bit)
 
