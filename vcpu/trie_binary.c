@@ -238,3 +238,24 @@ rule_3 ::= "0" "0";
 	isp(root, sub_root, "011");
 	return 0; 
 } 
+
+/*
+
+adding rule 1: segments [0, 1, 0] root [010]
+adding rule 2: segments [0, 1, 1] root [011]
+segment.string = 0
+result = true
+segment.string = 1
+result = true
+segment.string = 0
+result = false
+010 --- Present in trie
+segment.string = 0
+result = true
+segment.string = 1
+result = true
+segment.string = 1
+result = true
+011 --- Present in trie
+
+*/
