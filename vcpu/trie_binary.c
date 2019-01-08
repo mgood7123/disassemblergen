@@ -158,10 +158,10 @@ bool search_segmented(struct TrieNode *root, struct TrieNode *segments, const ch
 		
 		ps(segment.string);
 // 		pp(segments)
-		bool result = search(&segments, segment.string, idx);
+		bool result1 = search(&segments, segment.string, idx);
 // 		pp(segments)
-		pb(result);
-		if (result) {
+		pb(result1);
+		if (result1) {
 			str_reset(segment);
 			idx++;
 		}
