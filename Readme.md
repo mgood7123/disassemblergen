@@ -102,6 +102,27 @@ here is an example of this:
 	isp(root, sub_root, "12456");
 ```
 
+in this example, the disired execution is as follows
+
+parse `12356`
+match `1`
+choose chain 0
+match `2`
+match `3`
+match `5`
+match `6`
+
+parse `12456`
+match `1`
+match `2`
+fail `3`
+backtrack to `1`
+choose chain 1
+match `2`
+match `4`
+match `5`
+match `6`
+
 the following is how the parser currently works:
 
 the parser creates a `root` trie, this contains all the possible combinations of parser results, this is required
