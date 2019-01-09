@@ -160,11 +160,13 @@ bool search_segmented(struct TrieNode *root, struct TrieNode *segments, const ch
 // 		pp(segments)
 		bool result1 = search(&segments, segment.string, idx);
 // 		pp(segments)
+		pi(idx)
 		pb(result1);
 		if (result1) {
 			str_reset(segment);
 			idx++;
 		}
+		pi(idx)
 		str_new(ch);
 		str_insert_char(ch, key[level]);
 		if (ch.type & STR_TYPE_DIGIT) index = INT_TO_INDEX(key[level]);
@@ -216,26 +218,35 @@ rule_3 ::= "0" "0";
 	// when adding a new rule indexing resets to 0
 	
 	struct TrieNode *root = getNode(); 
-	puts("adding rule 1: segments [0, 1, 0] root [010]");
-	insert(root, "010", 0, NULL);
 	struct TrieNode *sub_root = getNode(); 
 	struct TrieNode *rule_1 = getNode();
 	struct TrieNode *rule_2 = getNode(); 
-	insert(sub_root, "0", 0, rule_1);
-		insert(rule_1, "1", 1, rule_2);
-		insert(rule_2, "0", 2, NULL);
-	
-	puts("adding rule 2: segments [0, 1, 1] root [011]");
-	insert(root, "011", 0, NULL);
 	struct TrieNode *rule_3 = getNode(); 
 	struct TrieNode *rule_4 = getNode(); 
-	insert(sub_root, "0", 0, rule_3);
-		insert(rule_3, "1", 1, rule_4);
-		insert(rule_4, "1", 2, NULL);
+	struct TrieNode *rule_5 = getNode(); 
+	struct TrieNode *rule_6 = getNode(); 
+	struct TrieNode *rule_7 = getNode(); 
+	struct TrieNode *rule_8 = getNode(); 
+
+	puts("adding rule 1: segments [0, 1, 1, 0] root [010]");
+	insert(root, "12356", 0, NULL);
+	insert(sub_root, "1", 0, rule_1);
+		insert(rule_1, "2", 1, rule_2);
+		insert(rule_2, "3", 2, rule_3);
+		insert(rule_3, "5", 3, rule_4);
+		insert(rule_4, "6", 4, NULL);
+	
+	puts("adding rule 2: segments [0, 1, 1] root [011]");
+	insert(root, "12456", 0, NULL);
+	insert(sub_root, "1", 0, rule_5);
+		insert(rule_5, "2", 1, rule_6);
+		insert(rule_6, "4", 2, rule_7);
+		insert(rule_7, "5", 3, rule_8);
+		insert(rule_8, "6", 4, NULL);
 		
 	// Search for different keys
-	isp(root, sub_root, "010");
-	isp(root, sub_root, "011");
+	isp(root, sub_root, "12356");
+	isp(root, sub_root, "12456");
 	return 0; 
 } 
 
