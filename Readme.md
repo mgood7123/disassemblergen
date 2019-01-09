@@ -75,14 +75,16 @@ the following is how the parser currently works:
 
 the parser creates a `root` trie, this contains all the possible combinations of parser results, this is required
 
-the parser then creates a network of segmented trie's, this is required for the implimentation of conditional code since partial trie matching cannot be done via the root
+the parser then creates a network of segmented trie's, this is required for the implementation of conditional code since partial trie matching cannot be done via the root
 
 
 in this trie network:
 
 the parser then creates a `sub_root` trie, this contains the first intended match of every rule
 
-the parser then contains sub trie's and binds them accordingly to form a trie chain, this is needed to correctly detect trie sequences and isolate trie's from detecting other matches in trie's not related to the trie chain
+the parser then creates sub trie's and binds them accordingly to form a trie chain, this is needed to correctly detect trie sequences and isolate trie's from detecting other matches in trie's not related to the trie chain
+
+backtracking is required in the trie chain
 
 a reference shall be interperated via a trie chain, it is uncertain how a `multi-match` rule will be interperated yet
 
