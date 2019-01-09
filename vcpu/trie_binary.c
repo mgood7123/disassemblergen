@@ -228,7 +228,6 @@ rule_3 ::= "0" "0";
 	struct TrieNode *rule_7 = getNode(); 
 	struct TrieNode *rule_8 = getNode(); 
 
-	puts("adding rule 1: segments [0, 1, 1, 0] root [010]");
 	insert(root, "12356", 0, NULL);
 	insert(sub_root, "1", 0, rule_1);
 		insert(rule_1, "2", 1, rule_2);
@@ -236,7 +235,6 @@ rule_3 ::= "0" "0";
 		insert(rule_3, "5", 3, rule_4);
 		insert(rule_4, "6", 4, NULL);
 	
-	puts("adding rule 2: segments [0, 1, 1] root [011]");
 	insert(root, "12456", 0, NULL);
 	insert(sub_root, "1", 0, rule_5);
 		insert(rule_5, "2", 1, rule_6);

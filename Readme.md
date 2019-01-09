@@ -69,7 +69,38 @@ parser ends execution
 
 
 
+here is an example of this:
 
+```
+	struct TrieNode *root = getNode(); 
+	struct TrieNode *sub_root = getNode(); 
+	struct TrieNode *rule_1 = getNode();
+	struct TrieNode *rule_2 = getNode(); 
+	struct TrieNode *rule_3 = getNode(); 
+	struct TrieNode *rule_4 = getNode(); 
+	struct TrieNode *rule_5 = getNode(); 
+	struct TrieNode *rule_6 = getNode(); 
+	struct TrieNode *rule_7 = getNode(); 
+	struct TrieNode *rule_8 = getNode(); 
+
+	insert(root, "12356", 0, NULL);
+	insert(sub_root, "1", 0, rule_1);
+		insert(rule_1, "2", 1, rule_2);
+		insert(rule_2, "3", 2, rule_3);
+		insert(rule_3, "5", 3, rule_4);
+		insert(rule_4, "6", 4, NULL);
+	
+	insert(root, "12456", 0, NULL);
+	insert(sub_root, "1", 0, rule_5);
+		insert(rule_5, "2", 1, rule_6);
+		insert(rule_6, "4", 2, rule_7);
+		insert(rule_7, "5", 3, rule_8);
+		insert(rule_8, "6", 4, NULL);
+		
+	// Search for different keys
+	isp(root, sub_root, "12356");
+	isp(root, sub_root, "12456");
+```
 
 the following is how the parser currently works:
 
