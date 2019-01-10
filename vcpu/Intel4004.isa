@@ -157,37 +157,45 @@ ADDR:
 	
 	*/
 	
-FIN1 {
-rip lol
-} : | 0011|RP|0|
-	   $0011 {
-printf("a->contents = 0011, regexEngineb_bits = %s\n", regexEngineb_bits);
-puts("FIN1 ");
-} {
-puts ("HELLO");
-}
+// FIN1 {
+// rip lol
+// } : | 0011|RP|0|
+// 	   $0011 {
+// printf("a->contents = 0011, regexEngineb_bits = %s\n", regexEngineb_bits);
+// puts("FIN1 ");
+// } {
+// puts ("HELLO");
+// }
+// 
+// 		    $RP {
+// puts("RP ");
+// }
+// FIN2: |0011|RP|1|
+// 	   $0011 {
+// printf("a->contents = 0011, regexEngineb_bits = %s\n", regexEngineb_bits);
+// puts("FIN2 ");
+// }
+// 
+// 		   $RP {
+// puts("RP ");
+// }
+// JCN:  |0001|CN  |ADDR|ADDR|
+// 	 $0001 {
+// printf("a->contents = 0001, regexEngineb_bits = %s\n", regexEngineb_bits);
+// puts("JCN ");
+// }
+// 		  $CN {
+// puts("CN");
+// 		}
+// 			  ${ADDR#0}
+// 				   ${ADDR#1} {
+// printf("a->contents = xxxx, regexEngineb_bits = %s\n", regexEngineb_bits);
+// 			}
 
-		    $RP {
-puts("RP ");
-}
-FIN2: |0011|RP|1|
-	   $0011 {
-printf("a->contents = 0011, regexEngineb_bits = %s\n", regexEngineb_bits);
-puts("FIN2 ");
-}
+def0:
+3:NULL
 
-		   $RP {
-puts("RP ");
-}
-JCN:  |0001|CN  |ADDR|ADDR|
-	 $0001 {
-printf("a->contents = 0001, regexEngineb_bits = %s\n", regexEngineb_bits);
-puts("JCN ");
-}
-		  $CN {
-puts("CN");
-		}
-			  ${ADDR#0}
-				   ${ADDR#1} {
-printf("a->contents = xxxx, regexEngineb_bits = %s\n", regexEngineb_bits);
-			}
+rule1 : |1{1}|2{2}|def0{3}|5{4}|6{5}|
+rule2 : |1{6}|2{7}|4{8}|5{9}|6{10}|
+rule3 : |1{11}|
+rule4 : |1{12}|

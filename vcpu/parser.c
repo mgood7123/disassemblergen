@@ -6,9 +6,10 @@
 #include "../Shell/builtins/regex_str.h"
 #include "../Shell/builtins/env.h"
 
-char * outfile = "tmpfile.c";
-int find_definition_strings_called = 0;
+// #define evalfile_
+#define evalfileI_
 
+#ifdef evalfile_
 static void AP(mpc_ast_t *a, int d, FILE *fp) {
 	
 	int i;
@@ -31,6 +32,12 @@ static void AP(mpc_ast_t *a, int d, FILE *fp) {
 	}
 	
 }
+#endif
+
+#ifdef evalfileI_
+char * outfile = "tmpfile.c";
+int find_definition_strings_called = 0;
+
 
 void piece2(mpc_ast_t *a, bool is_segmented, bool is_word, bool is_number, struct regex_string * b1, struct regex_string * b2) {
 	str_reg(a->tag);
@@ -184,31 +191,31 @@ bool find_definition_strings(mpc_ast_t *a, bool omit_else) {
 	if (strcmp(a->tag, "word|regex") == 0) {
 		find_definition_strings_called++;
 		printf("%s\n", a->contents);
-		str_new(tmp);
-		if (omit_else == false) if (find_definition_strings_called >1) str_insert_string(tmp, "else ");
-		str_insert_string(tmp, "if (!");
-		str_insert_string(tmp, "regexEngineb(");
-		str_insert_int(tmp, strlen(a->contents));
-		str_insert_string(tmp, ", ");
-		str_insert_int(tmp, strlen(a->contents));
-		str_insert_string(tmp, ", \"");
-		if (strlen(a->contents) != 1) {
-			str_insert_int(tmp, strlen(a->contents)-1);
-			str_insert_string(tmp, "-");
-		}
-		str_insert_string(tmp, "0,");
-		str_insert_string(tmp, a->contents);
-		str_insert_string(tmp, "\", binstr.data, ");
-		if (find_definition_strings_called >1) { str_insert_string(tmp, "true"); }
-		else { str_insert_string(tmp, "false"); }
-		str_insert_string(tmp, ")");
-		str_insert_string(tmp, ") {");
-// 		str_insert_string(tmp, "printf(\"a->contents = ");
+// 		str_new(tmp);
+// 		if (omit_else == false) if (find_definition_strings_called >1) str_insert_string(tmp, "else ");
+// 		str_insert_string(tmp, "if (!");
+// 		str_insert_string(tmp, "regexEngineb(");
+// 		str_insert_int(tmp, strlen(a->contents));
+// 		str_insert_string(tmp, ", ");
+// 		str_insert_int(tmp, strlen(a->contents));
+// 		str_insert_string(tmp, ", \"");
+// 		if (strlen(a->contents) != 1) {
+// 			str_insert_int(tmp, strlen(a->contents)-1);
+// 			str_insert_string(tmp, "-");
+// 		}
+// 		str_insert_string(tmp, "0,");
 // 		str_insert_string(tmp, a->contents);
-// 		str_insert_string(tmp, ", regexEngineb_bits = %s\\n\", regexEngineb_bits);\n");
-		str_insert_string(tmp, "}");
-		str_output_append(tmp.indented, outfile);
-		str_free(tmp);
+// 		str_insert_string(tmp, "\", binstr.data, ");
+// 		if (find_definition_strings_called >1) { str_insert_string(tmp, "true"); }
+// 		else { str_insert_string(tmp, "false"); }
+// 		str_insert_string(tmp, ")");
+// 		str_insert_string(tmp, ") {");
+// // 		str_insert_string(tmp, "printf(\"a->contents = ");
+// // 		str_insert_string(tmp, a->contents);
+// // 		str_insert_string(tmp, ", regexEngineb_bits = %s\\n\", regexEngineb_bits);\n");
+// 		str_insert_string(tmp, "}");
+// 		str_output_append(tmp.indented, outfile);
+// 		str_free(tmp);
 	}
 
 	return false;
@@ -801,7 +808,7 @@ void find_rules(mpc_ast_t *a, mpc_ast_t *orig, int d, bool is_sub_contents_part_
 		if (matches != 0) {
 			has_action_structures = true;
 			Build_Action_Code_Structure3(a, 0, false, true);
-		} else puts("no code structures detected");
+		}
 	} else if (strcmp(a->tag, "root|definition|>") == 0 || strcmp(a->tag, "root|>") == 0) {
 		is_sub_contents_part_of_instruction = false;
 	}
@@ -854,14 +861,136 @@ void find_rules(mpc_ast_t *a, mpc_ast_t *orig, int d, bool is_sub_contents_part_
 				}
 */
 
+
+
+
+
+
+
+
+
 int instruction_index = -1;
+int rule_index = -1;
+int chain_index = -1;
+bool passed_first = false;
+bool passed_next = false;
+int actual_index = 0;
+
+
+
+
+// A C program to demonstrate linked list based implementation of queue 
+// A linked list (LL) node to store a queue entry
+struct trie_QNode
+{
+	char * rule_name;
+	int rule_name_index;
+	char * key;
+	int index;
+	char * rule_next;
+	int rule_next_index;
+	env_t speculative_code;
+	env_t action_code;
+    struct QNode *next;
+};
+ 
+// The queue, front stores the front node of LL and rear stores ths
+// last node of LL
+struct trie_Queue
+{
+    struct trie_QNode *front, *rear;
+};
+ 
+// A utility function to create a new linked list node.
+struct trie_QNode* trie_newNode(char * a, int b, char * c, int d, char * e, int f)
+{
+    struct trie_QNode *temp = (struct trie_QNode*)malloc(sizeof(struct trie_QNode));
+	temp->rule_name = a;
+	temp->rule_name_index = b;
+	temp->key = c;
+	temp->index = d;
+	temp->rule_next = e;
+	temp->rule_next_index = f;
+    temp->next = NULL;
+	temp->speculative_code = NULL;
+	temp->action_code = NULL;
+    return temp;
+}
+ 
+// A utility function to create an empty queue
+struct trie_Queue *trie_createQueue()
+{
+    struct trie_Queue *q = (struct trie_Queue*)malloc(sizeof(struct trie_Queue));
+    q->front = q->rear = NULL;
+    return q;
+}
+
+void trie_store_asm(struct trie_Queue *q, char * rule_name, int rule_name_index, char * key, int index, char * rule_next, int rule_next_index)
+{
+    // Create a new LL node
+    struct trie_QNode *temp = trie_newNode(rule_name,rule_name_index,key,index,rule_next,rule_next_index);
+ 
+    // If queue is empty, then new node is front and rear both
+    if (q->rear == NULL)
+    {
+       q->front = q->rear = temp;
+		q->rear->rule_next = NULL;
+		q->rear->rule_next_index = -1;
+       return;
+    }
+ 
+    // Add the new node at the end of queue and change rear
+    if (q->rear) {
+		q->rear->rule_next = rule_name;
+		q->rear->rule_next_index = rule_name_index;
+	}
+    q->rear->next = temp;
+    q->rear = temp;
+    if (q->rear) {
+		q->rear->rule_next = NULL;
+		q->rear->rule_next_index = -1;
+	}
+}
+ 
+struct trie_QNode * trie_load_asm(struct trie_Queue **q)
+{
+    // If queue is empty, return NULL.
+	if ((q) == NULL) return NULL;
+	if ((*q) == NULL) return NULL;
+    if ((*q)->front == NULL)
+       return NULL;
+ 
+    // Store previous front and move front one node ahead
+    struct trie_QNode *temp = (*q)->front;
+    (*q)->front = (*q)->front->next;
+ 
+    // If front becomes NULL, then change rear also as NULL
+    if ((*q)->front == NULL)
+       (*q)->rear = NULL;
+    return temp;
+}
+
+int trie_queue_add(struct trie_Queue **q, char * rule_name, int rule_name_index, char * key, int index, char * rule_next, int rule_next_index) {
+    if (!(*q)) (*q) = trie_createQueue();
+    trie_store_asm((*q), rule_name,rule_name_index,key,index,rule_next,rule_next_index);
+    return 0;
+}
+
+char * trie_root = "root";
+char * trie_sub_root = "sub_root";
+char * trie_rule_prefix = "rule_";
+
+struct trie_Queue * trie_trie = NULL;
+
 void find_instructions3(mpc_ast_t *a, mpc_ast_t *orig, int d, bool is_sub_contents_part_of_instruction, bool is_sub_contents_part_of_sub_rule, bool is_sub_contents_part_of_action, bool first_call) {
-	
+	int i;
 	if (first_call) {
+		rule_index++;
 		instruction_index = -1;
 		find_rules(a, orig, d, is_sub_contents_part_of_instruction, is_sub_contents_part_of_sub_rule, is_sub_contents_part_of_action);
 		
-		for (int ii = 0; ii < action_code_builder_struct->instances; ii++) {
+		for (int ii = 0; ii < 0; ii++) {
+// 		for (int ii = 0; ii < action_code_builder_struct->instances; ii++) {
 			printf("action_code_builder_struct[%d].references->argc = %d\n", ii, action_code_builder_struct[ii].references->argc);
 			for(int i = 0; i < action_code_builder_struct[ii].references->argc; i++) {
 				printf("action_code_builder_struct[%d].references->argv[%d] = %s\n", ii, i,  action_code_builder_struct[ii].references->argv[i]);
@@ -897,7 +1026,6 @@ void find_instructions3(mpc_ast_t *a, mpc_ast_t *orig, int d, bool is_sub_conten
 		}
 // 		abort();
 	}
-	int i;
 	if (a == NULL) {
 		printf("NULL\n");
 		return;
@@ -917,6 +1045,10 @@ void find_instructions3(mpc_ast_t *a, mpc_ast_t *orig, int d, bool is_sub_conten
 	if (is_an_action_segmented_structure == true || is_an_action_structure == true) is_sub_contents_part_of_action = true;
 	
 	if (strcmp(a->tag, "root|instruction|>") == 0 || strcmp(a->tag, "instruction|>") == 0) {
+// 		for (i = 0; i < d; i++) printf("    ");
+		chain_index++;
+// 		printf("sub_root > chain %d\n", chain_index);
+		passed_first = true;
 		instruction_index++;
 		str_new(Production_Rule);
 		find_instruction_root_(a, &Production_Rule);
@@ -958,13 +1090,32 @@ void find_instructions3(mpc_ast_t *a, mpc_ast_t *orig, int d, bool is_sub_conten
 					if (tmp.type & STR_TYPE_BINARY){
 						type = "binary   ";
 					}
+					else if (tmp.type & STR_TYPE_DIGIT){
+						type = "digit    ";
+					}
 					else {
 						type = "reference";
 					}
+					if (!passed_first) {
+						if (passed_next) {
+							rule_index++;
+							actual_index = 0;
+							passed_next = false;
+							trie_queue_add(&trie_trie, trie_sub_root, -1, strdup(tmp.string), actual_index, trie_rule_prefix, rule_index);
+						}
+						else {
+							rule_index++;
+							actual_index++;
+							trie_queue_add(&trie_trie, trie_rule_prefix, rule_index-1, strdup(tmp.string), actual_index, trie_rule_prefix, rule_index);
+						}
+					} else {
+						passed_first = false;
+						passed_next = true;
+					}
 					for (i = 0; i < d; i++) printf("    ");
-					printf("    production segment (type: %s): %s\n",  type, tmp.string);
+					printf("    production segment (type: %s): %s \n",  type, tmp.string);
 					type = NULL;
-	// 				printf("tag: '%s', contents: '%s'\n", a->tag, a->contents);
+					printf("tag: '%s', contents: '%s'\n", a->tag, a->contents);
 					if (strcmp(a->tag, "binary|regex") == 0) {
 						if (number_ifs == 0) instructions++;
 						number_ifs++;
@@ -972,9 +1123,9 @@ void find_instructions3(mpc_ast_t *a, mpc_ast_t *orig, int d, bool is_sub_conten
 						if (number_ifs == 1) find_instruction_root(ra);
 					}
 					if (strcmp(a->tag, "ISA_RULE|word|regex") == 0 || (strcmp(a->tag, "word|regex") == 0 && is_sub_contents_part_of_sub_rule)) {
-// 						puts("FINDING");
-// 						find_definition_root(orig, a->contents);
-// 						puts("FOUND");
+						puts("FINDING");
+						find_definition_root(orig, a->contents);
+						puts("FOUND");
 					}
 					if (strcmp(a->tag, "ISA_DEFINE|word|regex") == 0 || strcmp(a->tag, "ISA_RULE|word|regex") == 0 || strcmp(a->tag, "word|regex") == 0 || strcmp(a->tag, "binary|regex") == 0) {
 						if (is_sub_contents_part_of_action == false && has_action_structures) {
@@ -982,16 +1133,18 @@ void find_instructions3(mpc_ast_t *a, mpc_ast_t *orig, int d, bool is_sub_conten
 							if (ac_amount) {
 								for (int i = 0; i < ac_amount; i++) {
 									char * ac_contents = action_code_builder_struct[instruction_index].references->content[action_code_builder_struct[instruction_index].references->ref[tag_index].content_id[i]].content.string;
-									STR_INDENT_SIZE = 4;
-									STR_INDENT_LEVEL = STR_INDENT_SIZE*(d+2);
+// 									STR_INDENT_SIZE = 4;
+// 									STR_INDENT_LEVEL = STR_INDENT_SIZE*(d+2);
 									str_new(action);
+									str_insert_string(action, "{")
 									str_insert_string(action, ac_contents)
 									str_insert_string(action, "}")
-									for (int in = 0; in < d+1; in++) printf("    ");
-									printf("action code = {\n%s\n", action.indented.string);
+// 									for (int in = 0; in < d+1; in++) printf("    ");
+// 									printf("%s%d:%s = action code = {\n%s\n", trie_trie->rear->rule_name, trie_trie->rear->rule_name_index, trie_trie->rear->key, action.indented.string);
+									trie_trie->rear->action_code = env__add(trie_trie->rear->action_code, action.indented.string);
 									str_free(action);
 									STR_INDENT_LEVEL = 0;
-									str_output_append(action_code_builder_struct[instruction_index].references->content[action_code_builder_struct[instruction_index].references->ref[tag_index].content_id[i]].content.indented, outfile);
+// 									str_output_append(action_code_builder_struct[instruction_index].references->content[action_code_builder_struct[instruction_index].references->ref[tag_index].content_id[i]].content.indented, outfile);
 								}
 								if (strcmp(a->contents, action_code_builder_struct[instruction_index].references->argv[tag_index]) != 0) {
 									puts("INCONSISTANCY DETECTED");
@@ -1009,13 +1162,15 @@ void find_instructions3(mpc_ast_t *a, mpc_ast_t *orig, int d, bool is_sub_conten
 				if(is_an_action) {
 					str_new(tmp);
 					aquire_action_code(a, &tmp);
-					STR_INDENT_SIZE = 4;
-					STR_INDENT_LEVEL = STR_INDENT_SIZE*(d+2);
+// 					STR_INDENT_SIZE = 4;
+// 					STR_INDENT_LEVEL = STR_INDENT_SIZE*(d+2);
 					str_new(action);
+					str_insert_string(action, "{")
 					str_insert_string(action, tmp.string)
 					str_insert_string(action, "}")
-					for (int in = 0; in < d+1; in++) printf("    ");
-					printf("action code = {\n%s\n", action.indented.string);
+// 					for (int in = 0; in < d+1; in++) printf("    ");
+// 					printf("%s%d:%s = action code = {\n%s\n", trie_trie->rear->rule_name, trie_trie->rear->rule_name_index, trie_trie->rear->key, action.indented.string);
+					trie_trie->rear->action_code = env__add(trie_trie->rear->action_code, action.indented.string);
 					str_free(action);
 					STR_INDENT_LEVEL = 0;
 // 					str_output_append(tmp.indented, outfile);
@@ -1031,6 +1186,71 @@ void find_instructions3(mpc_ast_t *a, mpc_ast_t *orig, int d, bool is_sub_conten
 	) for (i = 0; i < a->children_num; i++) {
 		find_instructions3(a->children[i], orig, d+1, is_sub_contents_part_of_instruction, is_sub_contents_part_of_sub_rule, is_sub_contents_part_of_action, false);
 	}
+	if (d == 0) {
+		printf("/*\nrule1 : |1{1}|2{2}|3{3}|5{4}|6{5}|\n\
+rule2 : |1{6}|2{7}|4{8}|5{9}|6{10}|\n\
+rule3 : |1{11}|\n\
+rule4 : |1{12}|\n*/\n");
+		
+		struct trie_QNode * node = malloc(1); // this gets freed anyway
+		int nodes = 0;
+		int start_indent = 0;
+		for (i = 0; i < start_indent; i++) printf("    ");
+		printf("struct TrieNode * %s = getNode(); \n", trie_root);
+		for (i = 0; i < start_indent; i++) printf("    ");
+		printf("struct TrieNode * %s = getNode(); \n", trie_sub_root);
+		while (node != NULL) {
+			// drain the list until empty
+			free(node);
+			node = trie_load_asm(&trie_trie);
+			if (node == NULL) break;
+			if (node->action_code) {
+				printf("action_code_function_%d (void) {\n", nodes);
+				puts("// listing action_code");
+				env__list(node->action_code);
+				puts("// listed action_code");
+				printf("}\n");
+			}
+			if (node->rule_next && node->rule_next_index != -1) {
+				if (node->rule_name_index == -1) {
+					// is sub_root
+					for (i = 0; i < start_indent+1; i++) printf("    ");
+					printf("struct TrieNode * %s%d = getNode(); \n", node->rule_next, node->rule_next_index);
+					for (i = 0; i < start_indent+1; i++) printf("    ");
+					printf("insert(%s, \"%s\", %d, %s%d);\n", node->rule_name, node->key, node->index, node->rule_next, node->rule_next_index);
+				}
+				else {
+					// is rule
+					for (i = 0; i < start_indent+2; i++) printf("    ");
+					printf("struct TrieNode * %s%d = getNode(); \n", node->rule_next, node->rule_next_index);
+					for (i = 0; i < start_indent+2; i++) printf("    ");
+					printf("insert(%s%d, \"%s\", %d, %s%d);\n", node->rule_name, node->rule_name_index, node->key, node->index, node->rule_next, node->rule_next_index);
+				}
+			} else {
+				if (node->rule_name_index == -1) {
+					// is sub_root
+					for (i = 0; i < start_indent+1; i++) printf("    ");
+					printf("insert(%s, \"%s\", %d, NULL);\n", node->rule_name, node->key, node->index);
+				} else {
+					// is rule
+					for (i = 0; i < start_indent+2; i++) printf("    ");
+					printf("insert(%s%d, \"%s\", %d, NULL);\n", node->rule_name, node->rule_name_index, node->key, node->index);
+				}
+			}
+// 			pp(node)
+// 			pp(node->rule_name)
+// 			ps(node->rule_name)
+// 			pi(node->rule_name_index)
+// 			pp(node->key)
+// 			ps(node->key)
+// 			free(node->key);
+// 			pi(node->index)
+// 			pp(node->rule_next)
+// 			ps(node->rule_next)
+// 			pi(node->rule_next_index)
+			nodes++;
+		}
+	}
 }
 
 
@@ -1040,7 +1260,8 @@ void find_instructions3(mpc_ast_t *a, mpc_ast_t *orig, int d, bool is_sub_conten
 
 
 
-
+#endif
+#ifdef evalfile_
 void evalfile(char * string, mpc_parser_t *p, mpc_result_t * r) {
 	if (mpc_parse_contents(string, p, r)) { // parse file specified in string with parser p and store resulting AST into r->output
 			AP(r->output, 0, stdout); // prints full AST
@@ -1050,7 +1271,8 @@ void evalfile(char * string, mpc_parser_t *p, mpc_result_t * r) {
 		mpc_err_delete(r->error);
 	}
 }
-
+#endif
+#ifdef evalfileI_
 void evalfileI(char * string, mpc_parser_t *p, mpc_result_t * r) {
 	if (mpc_parse_contents(string, p, r)) { // parse file specified in string with parser p and store resulting AST into r->output
 			instructions = 0;
@@ -1061,7 +1283,7 @@ void evalfileI(char * string, mpc_parser_t *p, mpc_result_t * r) {
 		mpc_err_delete(r->error);
 	}
 }
-
+#endif
 void eval(char * string, mpc_parser_t *p, mpc_result_t * r) {
 	if (mpc_parse("test", string, p, r)) {
 		mpc_ast_print(r->output);
@@ -1129,18 +1351,22 @@ int main(int argc, char **argv) {
 		exit(1);
 	}
 	mpc_result_t r;
+#ifdef evalfile_
+// 	evalfile("Intel4004TEST.isa", parser_root, &r);
+	evalfile("Intel4004.isa", parser_root, &r);
+#endif
+#ifdef evalfileI_
 	STR_INDENT_LEVEL = 0;
 	STR_INDENT_SIZE = 8;
 	str_new(ff);
 	str_include(ff, "ISA_test_PRE.c");
 	str_output(ff, outfile);
-// 	evalfile("Intel4004TEST.isa", parser_root, &r);
-// 	evalfile("Intel4004.isa", parser_root, &r);
 	evalfileI("Intel4004.isa", parser_root, &r);
 	str_reset(ff);
 	str_insert_string(ff, "}");
 	str_output_append(ff.indented, outfile);
 	str_free(ff);
+#endif
 // mpc_parser_t * re = mpc_new("re");
 // mpc_define(re, mpc_re("(ab(cd))+"));
 // mpc_result_t rr;

@@ -74,8 +74,9 @@ void Backtrack_store_asm(struct Backtrack_Queue **qq, struct TrieNode *pCrawl, s
  
 struct Backtrack_QNode * Backtrack_load_asm(struct Backtrack_Queue **qq)
 {
-    if ((*qq) == NULL)
-       return NULL;
+	if ((qq) == NULL) return NULL;
+	if ((*qq) == NULL) return NULL;
+	if ((*qq) == NULL) return NULL;
  
     // If queue is empty, return NULL.
     if ((*qq)->rear == NULL)
@@ -435,8 +436,10 @@ rule_3 ::= "0" "0";
 	insert(root, "12356", 0, NULL);
 	insert(sub_root, "1", 0, rule_1);
 		insert(rule_1, "2", 1, rule_2);
-		insert(rule_2, "3", 2, rule_3);
-		insert(rule_3, "5", 3, rule_4);
+			// "3" and "5" would be in a seperate chain
+			insert(rule_2, "3", 2, rule_3);
+			insert(rule_3, "5", 3, NULL);
+		// rule_4 needs to continue after rule_3 matches
 		insert(rule_4, "6", 4, NULL);
 	
 	insert(root, "12456", 0, NULL);
