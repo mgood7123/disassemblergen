@@ -432,20 +432,18 @@ rule_3 ::= "0" "0";
 	struct TrieNode *rule_10 = getNode(); 
 	struct TrieNode *rule_11 = getNode(); 
 	struct TrieNode *rule_12 = getNode(); 
+	struct TrieNode *rule_13 = getNode(); 
+	struct TrieNode *rule_14 = getNode(); 
 
 	insert(root, "12356", 0, NULL);
+	insert(root, "12856", 0, NULL);
 	insert(sub_root, "1", 0, rule_1);
 		insert(rule_1, "2", 1, rule_2);
-		/*
-		
-			// "3" and "5" would be in a seperate chain
 			insert(rule_2, "3", 2, rule_3);
-			insert(rule_3, "5", 3, NULL);
-		// rule_4 needs to continue after rule_3 matches
-		
-		*/
-		insert(rule_2, "3", 2, rule_3);
-		insert(rule_3, "5", 3, rule_4);
+			insert(rule_3, "5", 3, rule_4);
+		insert(rule_1, "2", 1, rule_13);
+			insert(rule_13, "8", 2, rule_14);
+			insert(rule_14, "5", 3, rule_4);
 		insert(rule_4, "6", 4, NULL);
 	
 	insert(root, "12456", 0, NULL);
@@ -462,9 +460,12 @@ rule_3 ::= "0" "0";
 		insert(rule_11, "5", 3, rule_12);
 		insert(rule_12, "7", 4, NULL);
 	// Search for different keys
-	isp(root, sub_root, "12356");
-	isp(root, sub_root, "12456");
-	isp(root, sub_root, "12457");
+	// > means pass
+	// < means backtrack to
+	isp(root, sub_root, "12356"); // 1>2>3>5>6
+	isp(root, sub_root, "12856"); // 1>2>3<2>8>5>6
+	isp(root, sub_root, "12456"); // 1>2>3<2>8<2<1>2>4>5>6
+	isp(root, sub_root, "12457"); // 1>2>3<2>8<2<1>2>4>5>6<1>2>4>5>7
 	return 0; 
 } 
 
