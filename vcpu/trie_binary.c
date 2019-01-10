@@ -20,6 +20,7 @@ struct Backtrack_QNode
 	int index;
 	int idx;
 	const char * key;
+	int branch_real_index;
     struct Backtrack_QNode *next;
 };
  
@@ -31,7 +32,7 @@ struct Backtrack_Queue
 };
  
 // A utility function to create a new linked list node.
-struct Backtrack_QNode* Backtrack_newNode(struct TrieNode *pCrawl, struct TrieNode *segments, int level, int index, int idx, const char * key)
+struct Backtrack_QNode* Backtrack_newNode(struct TrieNode *pCrawl, struct TrieNode *segments, int level, int index, int idx, const char * key, int branch_real_index)
 {
     struct Backtrack_QNode *temp = (struct Backtrack_QNode*)malloc(sizeof(struct Backtrack_QNode));
 	temp->pCrawl = pCrawl;
@@ -40,6 +41,7 @@ struct Backtrack_QNode* Backtrack_newNode(struct TrieNode *pCrawl, struct TrieNo
     temp->index = index;
     temp->idx = idx;
     temp->key = key;
+	temp->branch_real_index = branch_real_index;
     temp->next = NULL;
     return temp; 
 }
@@ -52,13 +54,13 @@ struct Backtrack_Queue *Backtrack_createQueue()
     return q;
 }
 
-void Backtrack_store_asm(struct Backtrack_Queue **qq, struct TrieNode *pCrawl, struct TrieNode *segments, int level, int index, int idx, const char * key)
+void Backtrack_store_asm(struct Backtrack_Queue **qq, struct TrieNode *pCrawl, struct TrieNode *segments, int level, int index, int idx, const char * key, int branch_real_index)
 {
     if (*qq == NULL)
        *qq = Backtrack_createQueue();
  
     // Create a new LL node
-    struct Backtrack_QNode *temp = Backtrack_newNode(pCrawl, segments, level, index, idx, key);
+    struct Backtrack_QNode *temp = Backtrack_newNode(pCrawl, segments, level, index, idx, key, branch_real_index);
  
     // If queue is empty, then new node is front and rear both
     if ((*qq)->rear == NULL)
@@ -233,7 +235,7 @@ bool search(struct TrieNode **root, const char *key, int idx, bool * branches, i
 // 		pi(pCrawl->next_count);
 		if (branch_index > pCrawl->next_count-1) {
 			puts("error, branch index is greater than branch count");
-			abort();
+			return false;
 		}
 // 		pp(pCrawl->next);
 // 		pb(pCrawl->branch);
@@ -279,9 +281,11 @@ bool search_segmented(struct TrieNode *root, struct TrieNode *segments, const ch
 
 	for (level = 0; level < length; level++) 
 	{
+// 		puts("");
+// 		sleep(1);
 		if (next_reload) {
 			puts("attempting to load last backtrack reference");
-			struct Backtrack_QNode * Backtrack_node = NULL; \
+			struct Backtrack_QNode * Backtrack_node = NULL;
 			Backtrack_node = Backtrack_load_asm(&Backtrack_queue);
 // 			pp(Backtrack_node)
 			if (Backtrack_node) {
@@ -292,12 +296,14 @@ bool search_segmented(struct TrieNode *root, struct TrieNode *segments, const ch
 // 				pi(index)
 // 				pi(idx)
 // 				ps(key)
+// 				pi(branch_real_index)
 // 				pp(Backtrack_node->pCrawl)
 // 				pp(Backtrack_node->segments)
 // 				pi(Backtrack_node->level)
 // 				pi(Backtrack_node->index)
 // 				pi(Backtrack_node->idx)
 // 				ps(Backtrack_node->key)
+// 				pi(Backtrack_node->branch_real_index)
 				for (int i = 0; i < undo; i++) {
 					str_undo_(segment);
 				}
@@ -308,7 +314,7 @@ bool search_segmented(struct TrieNode *root, struct TrieNode *segments, const ch
 				index = Backtrack_node->index;
 				idx = Backtrack_node->idx;
 				key = Backtrack_node->key;
-				branch_real_index++;
+				branch_real_index = Backtrack_node->branch_real_index+1;
 			}
 		}
 		if (next_reload) {
@@ -320,6 +326,11 @@ bool search_segmented(struct TrieNode *root, struct TrieNode *segments, const ch
 			reset_branch_on_next_load = false;
 		}
 		else branch_index = branch_sub_index;
+// 		pi(level)
+// 		pi(branch_index)
+// 		pi(branch_sub_index)
+// 		pi(branch_real_index)
+// 		pc(key[level])
 		str_new(ch);
 		str_insert_char(ch, key[level]);
 		if (ch.type & STR_TYPE_DIGIT) index = INT_TO_INDEX(key[level]);
@@ -351,7 +362,7 @@ bool search_segmented(struct TrieNode *root, struct TrieNode *segments, const ch
 // 			pi(index)
 // 			pi(idx)
 // 			ps(key)
-			Backtrack_store_asm(&Backtrack_queue, pCrawl, segments_prev, level, index, idx, key);
+			Backtrack_store_asm(&Backtrack_queue, pCrawl, segments_prev, level, index, idx, key, branch_real_index);
 			puts("backtrack reference created successfully");
 		}
 // 		pp(segments)
@@ -380,8 +391,18 @@ bool search_segmented(struct TrieNode *root, struct TrieNode *segments, const ch
 		}
 
 		pCrawl = pCrawl->children[index]; 
-	} 
+	}
 	str_free(segment);
+	struct Backtrack_QNode * Backtrack_node = malloc(1);
+	int Backtrack_Nodes = 0;
+	while (Backtrack_node != NULL) {
+		// drain the list until empty
+		free(Backtrack_node);
+		Backtrack_node = Backtrack_load_asm(&Backtrack_queue);
+		if (Backtrack_node == NULL) break;
+		Backtrack_Nodes++;
+	}
+	printf("freed %d node%s\n", Backtrack_Nodes, Backtrack_Nodes==1?"":"s");
 	return (pCrawl != NULL && pCrawl->isEndOfWord); 
 } 
 
