@@ -134,10 +134,12 @@ struct TrieNode *getNode(void)
 	{ 
 		int i; 
 
-		pNode->isEndOfWord = false; 
 		pNode->idx = NULL;
-		pNode->next = NULL;
 		pNode->count = 0;
+		pNode->branch = false;
+		pNode->isEndOfWord = false; 
+		pNode->next = NULL;
+		pNode->next_count = 0;
 		for (i = 0; i < ALPHABET_SIZE; i++) 
 			pNode->children[i] = NULL; 
 	} 
