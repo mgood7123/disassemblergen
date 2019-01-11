@@ -93,7 +93,7 @@ struct regex_string
 #define range_PUNCTUATION(ch)		ispunct((unsigned char) ch)
 #define range_PRINTABLE(ch) 		isprint((unsigned char) ch)
 #define range_GRAPH(ch) 			isgraph((unsigned char) ch)
-#define range_DIGIT(ch) 			isxdigit((unsigned char) ch)
+#define range_DIGIT(ch) 			isdigit((unsigned char) ch)
 #define range_CONTROL(ch) 			iscntrl((unsigned char) ch)
 #define range_BLANK(ch) 			isblank((unsigned char) ch)
 

@@ -39,6 +39,170 @@ char * outfile = "tmpfile.c";
 int find_definition_strings_called = 0;
 
 
+int instruction_index = -1;
+int rule_index = -1;
+int chain_index = -1;
+bool passed_first = false;
+bool passed_next = false;
+int actual_index = 0;
+
+
+
+
+// A C program to demonstrate linked list based implementation of queue 
+// A linked list (LL) node to store a queue entry
+struct trie_QNode
+{
+	char * rule_name;
+	int rule_name_index;
+	char * key;
+	int index;
+	char * rule_next;
+	int rule_next_index;
+	env_t speculative_code;
+	env_t action_code;
+    struct QNode *next;
+};
+ 
+// The queue, front stores the front node of LL and rear stores ths
+// last node of LL
+struct trie_Queue
+{
+    struct trie_QNode *front, *rear;
+};
+ 
+// A utility function to create a new linked list node.
+struct trie_QNode* trie_newNode(char * a, int b, char * c, int d, char * e, int f)
+{
+    struct trie_QNode *temp = (struct trie_QNode*)malloc(sizeof(struct trie_QNode));
+	temp->rule_name = a;
+	temp->rule_name_index = b;
+	temp->key = c;
+	temp->index = d;
+	temp->rule_next = e;
+	temp->rule_next_index = f;
+    temp->next = NULL;
+	temp->speculative_code = NULL;
+	temp->action_code = NULL;
+    return temp;
+}
+ 
+// A utility function to create an empty queue
+struct trie_Queue *trie_createQueue()
+{
+    struct trie_Queue *q = (struct trie_Queue*)malloc(sizeof(struct trie_Queue));
+    q->front = q->rear = NULL;
+    return q;
+}
+
+void trie_store_asm(struct trie_Queue *q, char * rule_name, int rule_name_index, char * key, int index, char * rule_next, int rule_next_index)
+{
+    // Create a new LL node
+    struct trie_QNode *temp = trie_newNode(rule_name,rule_name_index,key,index,rule_next,rule_next_index);
+ 
+    // If queue is empty, then new node is front and rear both
+    if (q->rear == NULL)
+    {
+       q->front = q->rear = temp;
+		q->rear->rule_next = NULL;
+		q->rear->rule_next_index = -1;
+       return;
+    }
+ 
+    // Add the new node at the end of queue and change rear
+    if (q->rear) {
+		q->rear->rule_next = rule_name;
+		q->rear->rule_next_index = rule_name_index;
+	}
+    q->rear->next = temp;
+    q->rear = temp;
+    if (q->rear) {
+		q->rear->rule_next = NULL;
+		q->rear->rule_next_index = -1;
+	}
+}
+
+void trie_store_asm2(struct trie_Queue *q, char * rule_name, int rule_name_index, char * key, int index, char * rule_next, int rule_next_index)
+{
+    // Create a new LL node
+    struct trie_QNode *temp = trie_newNode(rule_name,rule_name_index,key,index,rule_next,rule_next_index);
+ 
+    // If queue is empty, then new node is front and rear both
+    if (q->rear == NULL)
+    {
+       q->front = q->rear = temp;
+       return;
+    }
+ 
+    // Add the new node at the end of queue and change rear
+    if (q->rear) {
+		q->rear->rule_next = rule_name;
+		q->rear->rule_next_index = rule_name_index;
+	}
+    q->rear->next = temp;
+    q->rear = temp;
+}
+
+void trie_store_asm3(struct trie_Queue *q, char * rule_name, int rule_name_index, char * key, int index, char * rule_next, int rule_next_index)
+{
+    // Create a new LL node
+    struct trie_QNode *temp = trie_newNode(rule_name,rule_name_index,key,index,rule_next,rule_next_index);
+ 
+    // If queue is empty, then new node is front and rear both
+    if (q->rear == NULL)
+    {
+       q->front = q->rear = temp;
+       return;
+    }
+ 
+    // Add the new node at the end of queue and change rear
+    q->rear->next = temp;
+    q->rear = temp;
+}
+
+struct trie_QNode * trie_load_asm(struct trie_Queue **q)
+{
+    // If queue is empty, return NULL.
+	if ((q) == NULL) return NULL;
+	if ((*q) == NULL) return NULL;
+    if ((*q)->front == NULL)
+       return NULL;
+ 
+    // Store previous front and move front one node ahead
+    struct trie_QNode *temp = (*q)->front;
+    (*q)->front = (*q)->front->next;
+ 
+    // If front becomes NULL, then change rear also as NULL
+    if ((*q)->front == NULL)
+       (*q)->rear = NULL;
+    return temp;
+}
+
+int trie_queue_add(struct trie_Queue **q, char * rule_name, int rule_name_index, char * key, int index, char * rule_next, int rule_next_index) {
+    if (!(*q)) (*q) = trie_createQueue();
+    trie_store_asm((*q), rule_name,rule_name_index,key,index,rule_next,rule_next_index);
+    return 0;
+}
+
+int trie_queue_add2(struct trie_Queue **q, char * rule_name, int rule_name_index, char * key, int index, char * rule_next, int rule_next_index) {
+    if (!(*q)) (*q) = trie_createQueue();
+    trie_store_asm2((*q), rule_name,rule_name_index,key,index,rule_next,rule_next_index);
+    return 0;
+}
+
+int trie_queue_add3(struct trie_Queue **q, char * rule_name, int rule_name_index, char * key, int index, char * rule_next, int rule_next_index) {
+    if (!(*q)) (*q) = trie_createQueue();
+    trie_store_asm3((*q), rule_name,rule_name_index,key,index,rule_next,rule_next_index);
+    return 0;
+}
+
+char * trie_root = "root";
+char * trie_sub_root = "sub_root";
+char * trie_rule_prefix = "rule_";
+
+struct trie_Queue * trie_trie = NULL;
+
+
 void piece2(mpc_ast_t *a, bool is_segmented, bool is_word, bool is_number, struct regex_string * b1, struct regex_string * b2) {
 	str_reg(a->tag);
 // 	if (is_segmented) ps(a->tag)
@@ -182,7 +346,8 @@ bool find_definition_root_(mpc_ast_t *a, struct regex_string * aa) {
 	}
 	return false;
 }
-
+int final_rule = 0;
+int rule_index_tmp = 0;
 bool find_definition_strings(mpc_ast_t *a, bool omit_else) {
 	if (a == NULL) {
 		printf("NULL\n");
@@ -190,7 +355,68 @@ bool find_definition_strings(mpc_ast_t *a, bool omit_else) {
 	}
 	if (strcmp(a->tag, "word|regex") == 0) {
 		find_definition_strings_called++;
-		printf("%s\n", a->contents);
+		pi(find_definition_strings_called)
+// 		printf("%s\n", a->contents);
+		ps(a->contents);
+		int actual_index_tmp = 0;
+		if (find_definition_strings_called == 1) {
+			rule_index_tmp = rule_index+1;
+			final_rule = rule_index_tmp;
+		}
+		else if (find_definition_strings_called == 2) rule_index_tmp++;
+		actual_index_tmp = actual_index+1;
+	char * zrule_name;
+	int zrule_name_index;
+	char * zkey;
+	int zindex;
+		for (int level = 0; a->contents[level]; level++) {
+			str_new(ch);
+			str_insert_char(ch, a->contents[level])
+			printf("insert(%s%d, \"%s\", %d, %s%d);\n", trie_rule_prefix, rule_index_tmp-1, ch.string, actual_index_tmp, trie_rule_prefix, a->contents[level+1]?rule_index_tmp:final_rule);
+// 			if (level == 0) {
+// 				puts("add");
+				if (find_definition_strings_called == 1) {
+					if (a->contents[level+1]) {
+						puts("RULE");
+						trie_queue_add(&trie_trie, trie_rule_prefix, rule_index_tmp-1, strdup(ch.string), actual_index_tmp, trie_rule_prefix, rule_index_tmp);
+					} else {
+						puts("FINAL");
+						trie_queue_add2(&trie_trie, trie_rule_prefix, rule_index_tmp-1, strdup(ch.string), actual_index_tmp, trie_rule_prefix, final_rule);
+					}
+				} else {
+						puts("RULE FINAL");
+					trie_queue_add3(&trie_trie, trie_rule_prefix, rule_index_tmp-1, strdup(ch.string), actual_index_tmp, trie_rule_prefix, a->contents[level+1]?rule_index_tmp:final_rule);
+				}
+				pp(trie_trie->rear->rule_next)
+// 			} else {
+// 				if (a->contents[level+1]) {
+// 					puts("add2");
+// 					trie_queue_add2(&trie_trie, trie_rule_prefix, rule_index_tmp-1, strdup(ch.string), actual_index_tmp, trie_rule_prefix, rule_index_tmp);
+// 					pp(trie_trie->rear->rule_next)
+// 				} else {
+// 					puts("add3");
+// 					trie_queue_add3(&trie_trie, trie_rule_prefix, rule_index_tmp-1, strdup(ch.string), actual_index_tmp, trie_rule_prefix, final_rule);
+// 					pp(trie_trie->rear->rule_next)
+// 				}
+// 			}
+			str_free(ch);
+			rule_index_tmp++;
+			pi(rule_index_tmp)
+			if (find_definition_strings_called == 1 && a->contents[level+1]) final_rule++;
+			actual_index_tmp++;
+// 			pp(trie_trie->rear)
+// 			pp(trie_trie->rear->rule_name)
+// 			ps(trie_trie->rear->rule_name)
+// 			pi(trie_trie->rear->rule_name_index)
+// 			pp(trie_trie->rear->key)
+// 			ps(trie_trie->rear->key)
+// 			pi(trie_trie->rear->index)
+// 			pp(trie_trie->rear->rule_next)
+// 			ps(trie_trie->rear->rule_next)
+// 			pi(trie_trie->rear->rule_next_index)
+		}
+		pi(final_rule)
+// 		printf("insert(%s%d, \"%c\", %d, %s%d);\n", trie_rule_prefix, rule_index_tmp-1, orig, actual_index_tmp, trie_rule_prefix, rule_index_tmp);
 // 		str_new(tmp);
 // 		if (omit_else == false) if (find_definition_strings_called >1) str_insert_string(tmp, "else ");
 // 		str_insert_string(tmp, "if (!");
@@ -698,6 +924,7 @@ void Build_Action_Code_Structure3(mpc_ast_t *a, int d, bool is_sub_contents_part
 						str_int2string(idx, action_code_binder[ii].bind_index);
 						if (env__get_name(index_check, idx) != NULL) continue;
 						index_check = env__add2(index_check, idx);
+						free(idx);
 						// create an instance of content_id for each action code
 						if (action_code_builder_struct[action_code_builder_struct->instances-1].references->ref[action_code_binder[ii].bind_index].content_id == NULL) {
 							action_code_builder_struct[action_code_builder_struct->instances-1].references->ref[action_code_binder[ii].bind_index].content_id = malloc(sizeof(int)*1);
@@ -868,119 +1095,7 @@ void find_rules(mpc_ast_t *a, mpc_ast_t *orig, int d, bool is_sub_contents_part_
 
 
 
-
-int instruction_index = -1;
-int rule_index = -1;
-int chain_index = -1;
-bool passed_first = false;
-bool passed_next = false;
-int actual_index = 0;
-
-
-
-
-// A C program to demonstrate linked list based implementation of queue 
-// A linked list (LL) node to store a queue entry
-struct trie_QNode
-{
-	char * rule_name;
-	int rule_name_index;
-	char * key;
-	int index;
-	char * rule_next;
-	int rule_next_index;
-	env_t speculative_code;
-	env_t action_code;
-    struct QNode *next;
-};
- 
-// The queue, front stores the front node of LL and rear stores ths
-// last node of LL
-struct trie_Queue
-{
-    struct trie_QNode *front, *rear;
-};
- 
-// A utility function to create a new linked list node.
-struct trie_QNode* trie_newNode(char * a, int b, char * c, int d, char * e, int f)
-{
-    struct trie_QNode *temp = (struct trie_QNode*)malloc(sizeof(struct trie_QNode));
-	temp->rule_name = a;
-	temp->rule_name_index = b;
-	temp->key = c;
-	temp->index = d;
-	temp->rule_next = e;
-	temp->rule_next_index = f;
-    temp->next = NULL;
-	temp->speculative_code = NULL;
-	temp->action_code = NULL;
-    return temp;
-}
- 
-// A utility function to create an empty queue
-struct trie_Queue *trie_createQueue()
-{
-    struct trie_Queue *q = (struct trie_Queue*)malloc(sizeof(struct trie_Queue));
-    q->front = q->rear = NULL;
-    return q;
-}
-
-void trie_store_asm(struct trie_Queue *q, char * rule_name, int rule_name_index, char * key, int index, char * rule_next, int rule_next_index)
-{
-    // Create a new LL node
-    struct trie_QNode *temp = trie_newNode(rule_name,rule_name_index,key,index,rule_next,rule_next_index);
- 
-    // If queue is empty, then new node is front and rear both
-    if (q->rear == NULL)
-    {
-       q->front = q->rear = temp;
-		q->rear->rule_next = NULL;
-		q->rear->rule_next_index = -1;
-       return;
-    }
- 
-    // Add the new node at the end of queue and change rear
-    if (q->rear) {
-		q->rear->rule_next = rule_name;
-		q->rear->rule_next_index = rule_name_index;
-	}
-    q->rear->next = temp;
-    q->rear = temp;
-    if (q->rear) {
-		q->rear->rule_next = NULL;
-		q->rear->rule_next_index = -1;
-	}
-}
- 
-struct trie_QNode * trie_load_asm(struct trie_Queue **q)
-{
-    // If queue is empty, return NULL.
-	if ((q) == NULL) return NULL;
-	if ((*q) == NULL) return NULL;
-    if ((*q)->front == NULL)
-       return NULL;
- 
-    // Store previous front and move front one node ahead
-    struct trie_QNode *temp = (*q)->front;
-    (*q)->front = (*q)->front->next;
- 
-    // If front becomes NULL, then change rear also as NULL
-    if ((*q)->front == NULL)
-       (*q)->rear = NULL;
-    return temp;
-}
-
-int trie_queue_add(struct trie_Queue **q, char * rule_name, int rule_name_index, char * key, int index, char * rule_next, int rule_next_index) {
-    if (!(*q)) (*q) = trie_createQueue();
-    trie_store_asm((*q), rule_name,rule_name_index,key,index,rule_next,rule_next_index);
-    return 0;
-}
-
-char * trie_root = "root";
-char * trie_sub_root = "sub_root";
-char * trie_rule_prefix = "rule_";
-
-struct trie_Queue * trie_trie = NULL;
+bool update_on_next_pass = false;
 
 void find_instructions3(mpc_ast_t *a, mpc_ast_t *orig, int d, bool is_sub_contents_part_of_instruction, bool is_sub_contents_part_of_sub_rule, bool is_sub_contents_part_of_action, bool first_call) {
 	int i;
@@ -996,9 +1111,9 @@ void find_instructions3(mpc_ast_t *a, mpc_ast_t *orig, int d, bool is_sub_conten
 				printf("action_code_builder_struct[%d].references->argv[%d] = %s\n", ii, i,  action_code_builder_struct[ii].references->argv[i]);
 				printf("action_code_builder_struct[%d].references->tag[%d] = %s\n", ii, i,  action_code_builder_struct[ii].references->tag[i]);
 				if (strcmp(action_code_builder_struct[ii].references->tag[i], "ISA_RULE|word|regex") == 0 || (strcmp(action_code_builder_struct[ii].references->tag[i], "word|regex") == 0 && is_sub_contents_part_of_sub_rule == true)) {
-					puts("FINDING");
-					find_definition_root(orig, action_code_builder_struct[ii].references->argv[i]);
-					puts("FOUND");
+// 					puts("FINDING");
+// 					find_definition_root(orig, action_code_builder_struct[ii].references->argv[i]);
+// 					puts("FOUND");
 				}
 				int ac_amount = action_code_builder_struct[ii].references->ref[i].content_amount;
 				pi(ac_amount)
@@ -1098,15 +1213,31 @@ void find_instructions3(mpc_ast_t *a, mpc_ast_t *orig, int d, bool is_sub_conten
 					}
 					if (!passed_first) {
 						if (passed_next) {
-							rule_index++;
+					if (update_on_next_pass) {
+						pb(update_on_next_pass)
+						pi(rule_index)
+						pi(final_rule)
+						pi(rule_index_tmp-1)
+						pi(passed_first)
+						pi(passed_next)
+						rule_index = rule_index_tmp-1;
+						update_on_next_pass = false;
+					}
+// 							pi(rule_index)
+// 							rule_index++;
+// 							pi(rule_index)
 							actual_index = 0;
 							passed_next = false;
 							trie_queue_add(&trie_trie, trie_sub_root, -1, strdup(tmp.string), actual_index, trie_rule_prefix, rule_index);
 						}
 						else {
-							rule_index++;
-							actual_index++;
-							trie_queue_add(&trie_trie, trie_rule_prefix, rule_index-1, strdup(tmp.string), actual_index, trie_rule_prefix, rule_index);
+							if ((tmp.type & STR_TYPE_BINARY) || (tmp.type & STR_TYPE_DIGIT)) {
+								pi(rule_index)
+								rule_index++;
+								pi(rule_index)
+								actual_index++;
+								trie_queue_add(&trie_trie, trie_rule_prefix, rule_index-1, strdup(tmp.string), actual_index, trie_rule_prefix, rule_index);
+							}
 						}
 					} else {
 						passed_first = false;
@@ -1126,6 +1257,13 @@ void find_instructions3(mpc_ast_t *a, mpc_ast_t *orig, int d, bool is_sub_conten
 						puts("FINDING");
 						find_definition_root(orig, a->contents);
 						puts("FOUND");
+						if (final_rule) {
+							pi(rule_index)
+							rule_index = final_rule;
+							update_on_next_pass = true;
+							pi(rule_index)
+							final_rule = 0;
+						}
 					}
 					if (strcmp(a->tag, "ISA_DEFINE|word|regex") == 0 || strcmp(a->tag, "ISA_RULE|word|regex") == 0 || strcmp(a->tag, "word|regex") == 0 || strcmp(a->tag, "binary|regex") == 0) {
 						if (is_sub_contents_part_of_action == false && has_action_structures) {
@@ -1187,23 +1325,46 @@ void find_instructions3(mpc_ast_t *a, mpc_ast_t *orig, int d, bool is_sub_conten
 		find_instructions3(a->children[i], orig, d+1, is_sub_contents_part_of_instruction, is_sub_contents_part_of_sub_rule, is_sub_contents_part_of_action, false);
 	}
 	if (d == 0) {
-		printf("/*\nrule1 : |1{1}|2{2}|3{3}|5{4}|6{5}|\n\
-rule2 : |1{6}|2{7}|4{8}|5{9}|6{10}|\n\
-rule3 : |1{11}|\n\
-rule4 : |1{12}|\n*/\n");
+// 		abort();
+		printf("/*\ndef0:\n\
+35:NULL\n\
+85:NULL\n\
+// 45:NULL\n\
+// 15:NULL\n\
+// def1:\n\
+// 91:NULL\n\
+// 92:NULL\n\
+// 93:NULL\n\
+// 94:NULL\n\
+\n\
+rule1 : |1|2|def0|6|\n\
+rule2 : |1|2|4|5|6|\n\
+rule3 : |1|2|4|5|7|\n*/\n");
 		
-		struct trie_QNode * node = malloc(1); // this gets freed anyway
+		struct trie_QNode * node = trie_newNode(NULL,0,NULL,0,NULL,0); // this gets freed anyway
 		int nodes = 0;
 		int start_indent = 0;
 		for (i = 0; i < start_indent; i++) printf("    ");
 		printf("struct TrieNode * %s = getNode(); \n", trie_root);
 		for (i = 0; i < start_indent; i++) printf("    ");
 		printf("struct TrieNode * %s = getNode(); \n", trie_sub_root);
+		env_t index_check = env__new();
 		while (node != NULL) {
 			// drain the list until empty
+			if (node->key) free(node->key);
 			free(node);
 			node = trie_load_asm(&trie_trie);
 			if (node == NULL) break;
+// 			pp(node)
+// 			pp(node->rule_name)
+// 			ps(node->rule_name)
+// 			pi(node->rule_name_index)
+// 			pp(node->key)
+// 			ps(node->key)
+// 			pi(node->index)
+// 			pp(node->rule_next)
+// 			ps(node->rule_next)
+// 			pi(node->rule_next_index)
 			if (node->action_code) {
 				printf("action_code_function_%d (void) {\n", nodes);
 				puts("// listing action_code");
@@ -1212,17 +1373,39 @@ rule4 : |1{12}|\n*/\n");
 				printf("}\n");
 			}
 			if (node->rule_next && node->rule_next_index != -1) {
+				bool rule_does_not_exist = true;
+				bool next_rule_does_not_exist = true;
+				str_int2string(idxA, node->rule_name_index);
+				str_int2string(idxB, node->rule_next_index);
+				if (env__get_name(index_check, idxA) != NULL) rule_does_not_exist = false;
+				index_check = env__add2(index_check, idxA);
+				free(idxA);
+				if (env__get_name(index_check, idxB) != NULL) next_rule_does_not_exist = false;
+				index_check = env__add2(index_check, idxB);
+				free(idxB);
 				if (node->rule_name_index == -1) {
 					// is sub_root
-					for (i = 0; i < start_indent+1; i++) printf("    ");
-					printf("struct TrieNode * %s%d = getNode(); \n", node->rule_next, node->rule_next_index);
+					if (rule_does_not_exist) {
+						for (i = 0; i < start_indent+1; i++) printf("    ");
+						printf("struct TrieNode * %s%d = getNode(); \n", node->rule_name, node->rule_name_index);
+					}
+					if (next_rule_does_not_exist) {
+						for (i = 0; i < start_indent+1; i++) printf("    ");
+						printf("struct TrieNode * %s%d = getNode(); \n", node->rule_next, node->rule_next_index);
+					}
 					for (i = 0; i < start_indent+1; i++) printf("    ");
 					printf("insert(%s, \"%s\", %d, %s%d);\n", node->rule_name, node->key, node->index, node->rule_next, node->rule_next_index);
 				}
 				else {
 					// is rule
-					for (i = 0; i < start_indent+2; i++) printf("    ");
-					printf("struct TrieNode * %s%d = getNode(); \n", node->rule_next, node->rule_next_index);
+					if (rule_does_not_exist) {
+						for (i = 0; i < start_indent+2; i++) printf("    ");
+						printf("struct TrieNode * %s%d = getNode(); \n", node->rule_name, node->rule_name_index);
+					}
+					if (next_rule_does_not_exist) {
+						for (i = 0; i < start_indent+2; i++) printf("    ");
+						printf("struct TrieNode * %s%d = getNode(); \n", node->rule_next, node->rule_next_index);
+					}
 					for (i = 0; i < start_indent+2; i++) printf("    ");
 					printf("insert(%s%d, \"%s\", %d, %s%d);\n", node->rule_name, node->rule_name_index, node->key, node->index, node->rule_next, node->rule_next_index);
 				}
@@ -1237,19 +1420,9 @@ rule4 : |1{12}|\n*/\n");
 					printf("insert(%s%d, \"%s\", %d, NULL);\n", node->rule_name, node->rule_name_index, node->key, node->index);
 				}
 			}
-// 			pp(node)
-// 			pp(node->rule_name)
-// 			ps(node->rule_name)
-// 			pi(node->rule_name_index)
-// 			pp(node->key)
-// 			ps(node->key)
-// 			free(node->key);
-// 			pi(node->index)
-// 			pp(node->rule_next)
-// 			ps(node->rule_next)
-// 			pi(node->rule_next_index)
 			nodes++;
 		}
+		env__free(index_check);
 	}
 }
 
